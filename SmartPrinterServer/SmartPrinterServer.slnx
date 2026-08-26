@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="../SmartPrinterWeb/SmartPrinterWeb.csproj" />
+  <Project Path="SmartPrinterServer.csproj" />
+</Solution>

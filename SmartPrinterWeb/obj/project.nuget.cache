@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "3kuK5o+hbG8=",
+  "success": true,
+  "projectFilePath": "E:\\Software Development Learning\\smartprinterserver\\SmartPrinterWeb\\SmartPrinterWeb.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Lenovo\\.nuget\\packages\\microsoft.aspnetcore.app.internal.assets\\10.0.11\\microsoft.aspnetcore.app.internal.assets.10.0.11.nupkg.sha512"
+  ],
+  "logs": []
+}
