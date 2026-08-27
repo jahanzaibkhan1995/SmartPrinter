@@ -1,18 +1,20 @@
 services:
   smartprinter-server:
     build:
-      context: ./SmartPrinterServer
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: SmartPrinterServer/Dockerfile
     container_name: smartprinter-server
     ports:
       - "5296:8080"
+    restart: unless-stopped
 
   smartprinter-web:
     build:
-      context: ./SmartPrinterWeb
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: SmartPrinterWeb/Dockerfile
     container_name: smartprinter-web
     ports:
       - "5170:8080"
     depends_on:
       - smartprinter-server
+    restart: unless-stopped

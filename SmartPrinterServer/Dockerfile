@@ -4,9 +4,12 @@ WORKDIR /src
 
 COPY . .
 
-RUN dotnet restore
+RUN dotnet restore ./SmartPrinterServer/SmartPrinterServer.csproj
 
-RUN dotnet publish -c Release -o /app/publish --no--restore
+RUN dotnet publish ./SmartPrinterServer/SmartPrinterServer.csproj \
+    -c Release \
+    -o /app/publish \
+    --no-restore
 
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
