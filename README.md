@@ -18,7 +18,7 @@ SmartPrinterWeb
 SmartPrinterServer
       │
       ▼
-   Print Queue
+  Print Queue
       │
       ▼
     Printer
@@ -41,6 +41,7 @@ The project contains two applications:
 * SQLite
 * Docker / Docker Compose
 * Windows Printing
+* Windows Services
 
 ---
 
@@ -57,30 +58,30 @@ SmartPrinter/
 
 ---
 
-## 🚀 Getting Started
+# 🚀 Development Setup
 
-### 1. Clone the repository
+## 1. Clone the Repository
 
 ```bash
 git clone https://github.com/jahanzaibkhan1995/SmartPrinter.git
 cd SmartPrinter
 ```
 
-### 2. Restore and build
+## 2. Restore and Build
 
 ```bash
 dotnet restore
 dotnet build
 ```
 
-### 3. Start the Server
+## 3. Start the Server
 
 ```bash
 cd SmartPrinterServer
 dotnet run
 ```
 
-### 4. Start the Web App
+## 4. Start the Web App
 
 Open another terminal:
 
@@ -97,7 +98,7 @@ http://localhost:5170
 
 ---
 
-## 🌐 Using From Another Device
+# 🌐 Using From Another Device
 
 Find the IP address of the computer running SmartPrinter:
 
@@ -111,7 +112,7 @@ For example:
 192.168.0.102
 ```
 
-Then open this on another device connected to the same network:
+From another device on the same network:
 
 ```text
 http://192.168.0.102:5170
@@ -121,7 +122,7 @@ Make sure the required port is allowed through Windows Firewall.
 
 ---
 
-## 🖨️ Printer Setup
+# 🖨️ Printer Setup
 
 The printer must be installed on the computer running `SmartPrinterServer`.
 
@@ -131,11 +132,11 @@ Check installed printers:
 Get-Printer
 ```
 
-SmartPrinterServer uses the configured Windows printer to process print jobs.
+The server uses the Windows printing system to communicate with the configured printer.
 
 ---
 
-## 📄 Printing Workflow
+# 📄 Printing Workflow
 
 1. Open SmartPrinter.
 2. Select a PDF.
@@ -149,9 +150,7 @@ SmartPrinterServer uses the configured Windows printer to process print jobs.
 
 ---
 
-## 🔌 API
-
-Some important endpoints:
+# 🔌 API
 
 | Method | Endpoint                   | Purpose                 |
 | ------ | -------------------------- | ----------------------- |
@@ -164,9 +163,194 @@ Some important endpoints:
 
 ---
 
-## 🐳 Docker
+# 📦 Publishing the Application
 
-Build the project:
+For deployment, publish the applications instead of running them with `dotnet run`.
+
+## Publish SmartPrinterServer
+
+From the solution directory:
+
+```powershell
+dotnet publish SmartPrinterServer/SmartPrinterServer.csproj `
+    -c Release `
+    -r win-x64 `
+    --self-contained true `
+    -o publish/Server
+```
+
+The published server will be placed in:
+
+```text
+publish/
+└── Server/
+```
+
+## Publish SmartPrinterWeb
+
+```powershell
+dotnet publish SmartPrinterWeb/SmartPrinterWeb.csproj `
+    -c Release `
+    -r win-x64 `
+    --self-contained true `
+    -o publish/Web
+```
+
+The result will be:
+
+```text
+publish/
+├── Server/
+└── Web/
+```
+
+### Why publish?
+
+Publishing creates a deployment-ready version of the application.
+
+Instead of:
+
+```text
+dotnet run
+```
+
+you can run the published application directly:
+
+```powershell
+.\SmartPrinterServer.exe
+```
+
+and:
+
+```powershell
+.\SmartPrinterWeb.exe
+```
+
+Using `--self-contained true` also includes the required .NET runtime, so the target Windows computer does not need to have the .NET runtime separately installed.
+
+---
+
+# 🪟 Running SmartPrinterServer as a Windows Service
+
+For a permanent printer server, `SmartPrinterServer` can run as a **Windows Service**.
+
+This means:
+
+* The server starts automatically with Windows.
+* You do not need to keep PowerShell open.
+* The server can run in the background.
+* The printer service is always available.
+
+## 1. Publish the Server
+
+First publish the server:
+
+```powershell
+dotnet publish SmartPrinterServer/SmartPrinterServer.csproj `
+    -c Release `
+    -r win-x64 `
+    --self-contained true `
+    -o E:\SmartPrinter\Server
+```
+
+You should then have:
+
+```text
+E:\SmartPrinter\Server\
+│
+├── SmartPrinterServer.exe
+├── appsettings.json
+├── *.dll
+└── other required files
+```
+
+## 2. Create the Windows Service
+
+Run PowerShell as **Administrator**:
+
+```powershell
+sc.exe create SmartPrinterServer `
+    binPath= "E:\SmartPrinter\Server\SmartPrinterServer.exe" `
+    start= auto
+```
+
+## 3. Start the Service
+
+```powershell
+sc.exe start SmartPrinterServer
+```
+
+Check its status:
+
+```powershell
+sc.exe query SmartPrinterServer
+```
+
+If successful, the server runs in the background.
+
+---
+
+# 🛑 Managing the Windows Service
+
+Stop:
+
+```powershell
+sc.exe stop SmartPrinterServer
+```
+
+Start:
+
+```powershell
+sc.exe start SmartPrinterServer
+```
+
+Restart:
+
+```powershell
+sc.exe stop SmartPrinterServer
+sc.exe start SmartPrinterServer
+```
+
+Check status:
+
+```powershell
+sc.exe query SmartPrinterServer
+```
+
+Remove the service:
+
+```powershell
+sc.exe delete SmartPrinterServer
+```
+
+> **Important:** Stop the service before deleting it.
+
+---
+
+# 🔄 Recommended Production Setup
+
+For a computer that is permanently connected to the printer:
+
+```text
+Windows PC
+│
+├── SmartPrinterServer
+│       └── Windows Service
+│
+├── SmartPrinterWeb
+│       └── Web Application
+│
+└── Physical Printer
+        └── USB / Network
+```
+
+The server can then remain running even when no PowerShell window is open.
+
+---
+
+# 🐳 Docker
+
+Build:
 
 ```bash
 docker compose build
@@ -190,15 +374,15 @@ Stop:
 docker compose down
 ```
 
-> **Note:** If the printer is connected through USB to Windows, running the actual printing component inside a Linux Docker container may require additional configuration. Running the print server directly on Windows is usually simpler.
+> **Note:** When the printer is connected through USB to Windows, the actual printing component may need to run directly on Windows. Docker is more suitable for the web/API components unless printer access is specifically configured.
 
 ---
 
-## 🔧 Troubleshooting
+# 🔧 Troubleshooting
 
 ### Connection refused
 
-Check whether the server is running and verify its port:
+Check whether the server is running:
 
 ```powershell
 netstat -ano | findstr LISTENING
@@ -209,17 +393,29 @@ netstat -ano | findstr LISTENING
 Check:
 
 * Both devices are on the same network.
-* You are using the server's IP address instead of `localhost`.
-* Windows Firewall allows the application port.
-* The web application is listening on a network-accessible address.
+* Use the server IP instead of `localhost`.
+* Windows Firewall allows the required port.
+* The application is listening on the correct network interface.
 
 ### PDF preview not working
 
 Make sure the browser can reach the backend API and that the API URL points to the **server computer**, not `localhost` on the client device.
 
+### Port already in use
+
+```powershell
+netstat -ano | findstr :5170
+```
+
+Find the process using the returned PID:
+
+```powershell
+tasklist /FI "PID eq <PID>"
+```
+
 ---
 
-## 🔮 Future Improvements
+# 🔮 Future Improvements
 
 * User authentication
 * Multiple printer support
@@ -234,7 +430,7 @@ Make sure the browser can reach the backend API and that the API URL points to t
 
 ---
 
-## 👤 Author
+# 👤 Author
 
 **Jahanzaib Khan**
 
@@ -242,4 +438,6 @@ GitHub:
 https://github.com/jahanzaibkhan1995
 
 Repository:
+https://github.com/jahanzaibkhan1995/SmartPrinter
+
 https://github.com/jahanzaibkhan1995/SmartPrinter
